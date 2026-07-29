@@ -145,7 +145,7 @@ const Dashboard = () => {
             <h3 className="text-xl font-bold text-slate-850 dark:text-white mb-4">My Submitted Proposals</h3>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-lg transition-colors">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
+                <table className="w-full min-w-[700px] text-left text-sm">
                   <thead className="bg-slate-900 dark:bg-slate-950 text-slate-50">
                     <tr>
                       <th className="px-6 py-4 font-semibold">Project Name</th>
@@ -231,7 +231,7 @@ const Dashboard = () => {
             <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">All Procurement Projects</h3>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-lg transition-colors">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
+                <table className="w-full min-w-[600px] text-left text-sm">
                   <thead className="bg-slate-900 dark:bg-slate-950 text-slate-50">
                     <tr>
                       <th className="px-6 py-4 font-semibold">Title</th>
@@ -271,7 +271,7 @@ const Dashboard = () => {
             <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">All Submitted Bids</h3>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-lg transition-colors">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
+                <table className="w-full min-w-[800px] text-left text-sm">
                   <thead className="bg-slate-900 dark:bg-slate-950 text-slate-50">
                     <tr>
                       <th className="px-6 py-4 font-semibold">Project Name</th>
@@ -351,7 +351,7 @@ const Dashboard = () => {
 
                 {rankedBids.length > 0 ? (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
+                    <table className="w-full min-w-[800px] text-left text-sm">
                       <thead className="text-slate-400 border-b border-indigo-500/10">
                         <tr>
                           <th className="py-3 px-4 font-semibold text-xs uppercase">Rank / Contractor</th>
