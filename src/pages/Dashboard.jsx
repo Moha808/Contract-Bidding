@@ -140,50 +140,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 transition-colors">
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Contractor Actions</h3>
-            <Link to="/bids/new" className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-5 rounded-xl shadow-md transition-colors text-sm">
-              Submit New Proposal
-            </Link>
-          </div>
-
-          {/* Available Projects Table for Contractors */}
-          <section>
-            <h3 className="text-xl font-bold text-slate-850 dark:text-white mb-4">Available Procurement Projects</h3>
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-lg transition-colors">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[700px] text-left text-sm">
-                  <thead className="bg-slate-900 dark:bg-slate-950 text-slate-50">
-                    <tr>
-                      <th className="px-6 py-4 font-semibold">Title</th>
-                      <th className="px-6 py-4 font-semibold">Max Budget</th>
-                      <th className="px-6 py-4 font-semibold">Deadline</th>
-                      <th className="px-6 py-4 font-semibold">Category</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {projects.length > 0 ? (
-                      projects.map((project, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                          <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">{project.title}</td>
-                          <td className="px-6 py-4 text-slate-600 dark:text-slate-300">₦{Number(project.budget).toLocaleString()}</td>
-                          <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{project.deadline} days</td>
-                          <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{project.category}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="4" className="px-6 py-8 text-center text-slate-500 dark:text-slate-400 font-medium bg-slate-50/50 dark:bg-slate-900/50">
-                          There are currently no projects open for bidding.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </section>
-
           {/* Contractor Bids Table */}
           <section>
             <h3 className="text-xl font-bold text-slate-850 dark:text-white mb-4">My Submitted Proposals</h3>
