@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { ShieldCheck, Zap, Gavel, ArrowRight, Award, Calendar, DollarSign, Sun, Moon } from 'lucide-react';
+import { ShieldCheck, Zap, Gavel, ArrowRight, Award, Calendar, DollarSign, Sun, Moon, Menu, X } from 'lucide-react';
 
 const FeatureCard = ({ icon: Icon, title, description }) => (
   <div className="group relative bg-white dark:bg-slate-900/40 backdrop-blur-xl p-8 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 transition-all duration-300 hover:shadow-2xl dark:hover:shadow-indigo-500/5 overflow-hidden">
@@ -18,6 +18,7 @@ const FeatureCard = ({ icon: Icon, title, description }) => (
 
 const Landing = () => {
   const { theme, toggleTheme } = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Bidding cost analysis calculator state
   const [amount, setAmount] = useState(1600000);
@@ -54,17 +55,19 @@ const Landing = () => {
       <div className="absolute top-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-600/5 dark:bg-purple-600/10 blur-[120px] -z-10"></div>
 
       {/* Navigation */}
-      <nav className="fixed w-full bg-white/75 dark:bg-[#030712]/75 backdrop-blur-md z-50 border-b border-slate-200 dark:border-slate-900 transition-colors">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
+      <nav className="fixed w-full bg-white/90 dark:bg-[#030712]/90 backdrop-blur-md z-50 border-b border-slate-200 dark:border-slate-900 transition-colors">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3 text-indigo-600 dark:text-indigo-400">
             <Gavel className="w-8 h-8 rotate-12" />
             <span className="text-xl font-bold tracking-tight text-slate-950 dark:text-white">BidMaster</span>
           </div>
-          <div className="flex gap-4 items-center">
+          
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex gap-4 items-center">
             {/* Theme Toggle Button */}
             <button 
               onClick={toggleTheme} 
-              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+              className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
               title="Toggle Theme"
             >
               {theme === 'dark' ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-indigo-600" />}
@@ -75,7 +78,45 @@ const Landing = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Link>
           </div>
+
+          {/* Mobile Navigation controls */}
+          <div className="flex md:hidden items-center gap-3">
+            {/* Mobile Theme Toggle */}
+            <button 
+              onClick={toggleTheme} 
+              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-305 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-indigo-600" />}
+            </button>
+            {/* Hamburger Button */}
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-905 hover:bg-slate-202 text-slate-700 dark:text-slate-300"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-slate-100 dark:border-slate-900 bg-white dark:bg-[#030712] px-6 py-6 space-y-4 shadow-xl animate-in slide-in-from-top duration-200">
+            <Link 
+              to="/login" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="block w-full text-center py-3 font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-colors"
+            >
+              Sign In
+            </Link>
+            <Link 
+              to="/register" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="block w-full text-center py-3 bg-indigo-600 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/20"
+            >
+              Get Started
+            </Link>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
@@ -141,7 +182,7 @@ const Landing = () => {
                     step="50000"
                     value={amount} 
                     onChange={(e) => setAmount(Number(e.target.value))}
-                    className="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                    className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500 py-1"
                   />
                   <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-600">
                     <span>Min (₦500k)</span>
@@ -162,7 +203,7 @@ const Landing = () => {
                     max="120" 
                     value={duration} 
                     onChange={(e) => setDuration(Number(e.target.value))}
-                    className="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                    className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500 py-1"
                   />
                   <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-600">
                     <span>15 Days</span>
@@ -182,7 +223,7 @@ const Landing = () => {
                     max="100" 
                     value={quality} 
                     onChange={(e) => setQuality(Number(e.target.value))}
-                    className="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                    className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500 py-1"
                   />
                   <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-600">
                     <span>50%</span>
