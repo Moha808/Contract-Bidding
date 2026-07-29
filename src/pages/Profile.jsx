@@ -8,7 +8,7 @@ const Profile = () => {
   const [formData, setFormData] = useState({
     name: currentUser?.name || '',
     email: currentUser?.email || '',
-    organization: 'Adamawa State University',
+    organization: 'FCAH&PT Vom, Plateau State',
     phone: '+234 801 234 5678'
   });
 
