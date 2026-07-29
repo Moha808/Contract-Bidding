@@ -18,7 +18,7 @@ const Settings = () => {
 
         <div className="space-y-6">
           {/* Notifications */}
-          <div className="flex items-center justify-between py-4 border-b border-slate-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-b border-slate-100">
             <div className="flex gap-4 items-start">
               <div className="bg-slate-100 p-2 rounded-xl text-slate-600">
                 <Bell className="w-5 h-5" />
@@ -40,7 +40,7 @@ const Settings = () => {
           </div>
 
           {/* Interface Language */}
-          <div className="flex items-center justify-between py-4 border-b border-slate-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-b border-slate-100">
             <div className="flex gap-4 items-start">
               <div className="bg-slate-100 p-2 rounded-xl text-slate-600">
                 <Globe className="w-5 h-5" />
@@ -62,7 +62,7 @@ const Settings = () => {
           </div>
 
           {/* Security / Password reset placeholder */}
-          <div className="flex items-center justify-between py-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-b border-slate-100 dark:border-slate-800">
             <div className="flex gap-4 items-start">
               <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded-xl text-slate-600 dark:text-slate-400">
                 <Lock className="w-5 h-5" />
@@ -77,29 +77,6 @@ const Settings = () => {
             </button>
           </div>
 
-          {/* Wipe Mock Data */}
-          <div className="flex items-center justify-between py-4">
-            <div className="flex gap-4 items-start">
-              <div className="bg-red-50 dark:bg-red-900/20 p-2 rounded-xl text-red-600 dark:text-red-400">
-                <SettingsIcon className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-bold text-red-600 dark:text-red-400">Reset System Data</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Permanently delete all mock projects, bids, and user data.</p>
-              </div>
-            </div>
-            <button 
-              onClick={() => {
-                if (window.confirm("Are you sure you want to delete all data? This will sign you out and wipe everything.")) {
-                  localStorage.clear();
-                  window.location.href = '/';
-                }
-              }}
-              className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
-            >
-              Wipe All Data
-            </button>
-          </div>
         </div>
       </div>
     </div>

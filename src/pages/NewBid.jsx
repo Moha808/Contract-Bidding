@@ -7,9 +7,9 @@ import { db } from '../firebase';
 const NewBid = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const [projects, setProjects] = useState([]);
   const [formData, setFormData] = useState({
     projectName: '',
+    projectCategory: '',
     contractor: '',
     amount: '',
     duration: '',
@@ -20,31 +20,12 @@ const NewBid = () => {
   });
 
   useEffect(() => {
-    let unsubProjects = () => {};
-
-    const fetchProjects = () => {
-      try {
-        const q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
-        unsubProjects = onSnapshot(q, (snapshot) => {
-          const fetchedProjects = snapshot.docs.map(doc => doc.data());
-          setProjects(fetchedProjects);
-          
-          setFormData(prev => ({
-            ...prev,
-            projectName: prev.projectName || (fetchedProjects.length > 0 ? fetchedProjects[0].title : ''),
-            contractor: currentUser?.role === 'Contractor' ? currentUser.name : prev.contractor
-          }));
-        });
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      }
-    };
-    
-    fetchProjects();
-
-    return () => {
-      unsubProjects();
-    };
+    if (currentUser) {
+      setFormData(prev => ({
+        ...prev,
+        contractor: currentUser?.role === 'Contractor' ? currentUser.name : prev.contractor
+      }));
+    }
   }, [currentUser]);
 
   const handleChange = (e) => {
@@ -84,23 +65,37 @@ const NewBid = () => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-100 dark:border-slate-800">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-6 border-b border-slate-100 dark:border-slate-800">
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Project Name</label>
               <input 
                 type="text"
                 name="projectName" 
-                list="project-list"
                 className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all" 
                 onChange={handleChange}
                 value={formData.projectName}
-                placeholder="Select or type a project name"
+                placeholder="e.g. New Classroom Block"
                 required
               />
-              <datalist id="project-list">
-                {projects.map((p, i) => (
-                  <option key={i} value={p.title} />
-                ))}
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Project Category</label>
+              <input 
+                type="text"
+                name="projectCategory" 
+                list="category-list"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all" 
+                onChange={handleChange}
+                value={formData.projectCategory}
+                placeholder="e.g. Electrical, Building"
+                required
+              />
+              <datalist id="category-list">
+                <option value="Electrical" />
+                <option value="Civil/Building" />
+                <option value="Plumbing" />
+                <option value="Supplies/IT" />
               </datalist>
             </div>
 
