@@ -311,19 +311,20 @@ const Dashboard = () => {
           <section className="bg-gradient-to-br from-slate-900 to-indigo-950 p-8 rounded-3xl border border-indigo-500/20 text-white shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -z-10"></div>
             
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-indigo-500/20">
-              <div>
-                <h3 className="text-2xl font-black flex items-center gap-2">
-                  <Award className="w-7 h-7 text-indigo-400 rotate-12" /> Weighted-Decision Audit & Selection Matrix
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8 pb-6 border-b border-indigo-500/20">
+              <div className="space-y-1">
+                <h3 className="text-xl sm:text-2xl font-black flex items-start gap-2 text-white">
+                  <Award className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-400 rotate-12 flex-shrink-0 mt-0.5" />
+                  <span>Weighted-Decision Audit & Selection Matrix</span>
                 </h3>
-                <p className="text-slate-400 text-sm mt-1">Multi-criteria score evaluation for bias-free procurement (AI-free mathematical models)</p>
+                <p className="text-slate-400 text-xs sm:text-sm">Multi-criteria score evaluation for bias-free procurement (AI-free mathematical models)</p>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-slate-300 font-semibold whitespace-nowrap">Target Project:</span>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full lg:w-auto">
+                <span className="text-xs text-slate-300 font-semibold sm:whitespace-nowrap">Target Project:</span>
                 <select 
                   value={activeProjectTitle} 
                   onChange={(e) => setSelectedProjTitle(e.target.value)}
-                  className="bg-slate-950 border border-indigo-500/30 rounded-xl px-4 py-2.5 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                  className="w-full lg:w-64 bg-slate-950 border border-indigo-500/30 rounded-xl px-4 py-2.5 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                 >
                   {projects.map((p, idx) => (
                     <option key={idx} value={p.title} className="bg-slate-950">{p.title}</option>
