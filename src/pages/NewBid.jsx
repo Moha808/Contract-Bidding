@@ -86,19 +86,22 @@ const NewBid = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-100 dark:border-slate-800">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Select Project</label>
-              <select 
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Project Name</label>
+              <input 
+                type="text"
                 name="projectName" 
+                list="project-list"
                 className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all" 
                 onChange={handleChange}
                 value={formData.projectName}
+                placeholder="Select or type a project name"
                 required
-              >
-                <option value="" disabled>-- Select a Project --</option>
+              />
+              <datalist id="project-list">
                 {projects.map((p, i) => (
-                  <option key={i} value={p.title}>{p.title}</option>
+                  <option key={i} value={p.title} />
                 ))}
-              </select>
+              </datalist>
             </div>
 
             <div>
