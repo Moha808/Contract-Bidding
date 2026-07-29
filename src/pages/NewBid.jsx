@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const NewBid = () => {
@@ -20,26 +20,20 @@ const NewBid = () => {
   });
 
   useEffect(() => {
-    const fetchProjects = async () => {
+    let unsubProjects = () => {};
+
+    const fetchProjects = () => {
       try {
         const q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
-        const querySnapshot = await getDocs(q);
-        const fetchedProjects = querySnapshot.docs.map(doc => doc.data());
-        
-        setProjects(fetchedProjects);
-        
-        const initialProjectName = fetchedProjects.length > 0 ? fetchedProjects[0].title : '';
-        const initialContractor = currentUser?.role === 'Contractor' ? currentUser.name : '';
-    
-        setFormData({
-          projectName: initialProjectName,
-          contractor: initialContractor,
-          amount: '',
-          duration: '',
-          experience: '',
-          qualityScore: '',
-          onTimeRate: '',
-          pastDisputes: ''
+        unsubProjects = onSnapshot(q, (snapshot) => {
+          const fetchedProjects = snapshot.docs.map(doc => doc.data());
+          setProjects(fetchedProjects);
+          
+          setFormData(prev => ({
+            ...prev,
+            projectName: prev.projectName || (fetchedProjects.length > 0 ? fetchedProjects[0].title : ''),
+            contractor: currentUser?.role === 'Contractor' ? currentUser.name : prev.contractor
+          }));
         });
       } catch (error) {
         console.error("Error fetching projects:", error);
@@ -47,6 +41,10 @@ const NewBid = () => {
     };
     
     fetchProjects();
+
+    return () => {
+      unsubProjects();
+    };
   }, [currentUser]);
 
   const handleChange = (e) => {
@@ -96,6 +94,7 @@ const NewBid = () => {
                 value={formData.projectName}
                 required
               >
+                <option value="" disabled>-- Select a Project --</option>
                 {projects.map((p, i) => (
                   <option key={i} value={p.title}>{p.title}</option>
                 ))}
