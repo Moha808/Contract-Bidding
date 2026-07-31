@@ -150,6 +150,21 @@ const Register = () => {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Account Role</label>
+                <select 
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none"
+                >
+                  <option value="Contractor" className="bg-slate-900 text-white">Contractor (External)</option>
+                  <option value="Procurement Officer" className="bg-slate-900 text-white">Procurement Officer (Internal)</option>
+                  <option value="Engineer" className="bg-slate-900 text-white">Engineer (Internal)</option>
+                  <option value="Administrator" className="bg-slate-900 text-white">Administrator</option>
+                </select>
+              </div>
+
               <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transform hover:-translate-y-0.5 active:translate-y-0 mt-2 disabled:opacity-70 disabled:hover:translate-y-0">
                 {isSubmitting ? 'Creating Account...' : 'Create Account'}
               </button>

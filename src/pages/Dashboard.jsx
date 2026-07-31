@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import { FileDown, Download, FileSpreadsheet, Calendar, DollarSign, Award } from 'lucide-react';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const Dashboard = () => {
@@ -76,6 +76,17 @@ const Dashboard = () => {
 
   const handleExportPDF = () => exportToPDF(projects, bids);
   const handleExportExcel = () => exportToExcel(projects, bids);
+
+  const handleRespondToBid = async (bidId, status) => {
+    try {
+      const bidRef = doc(db, 'bids', bidId);
+      await updateDoc(bidRef, { status });
+      alert(`Bid successfully marked as ${status}`);
+    } catch (error) {
+      console.error("Error updating bid status:", error);
+      alert("Failed to update bid status");
+    }
+  };
 
   // Filter bids for the specific contractor logged in (simple match against their name)
   const myBids = bids.filter(bid => bid.contractor.toLowerCase().includes(currentUser?.name?.toLowerCase() || ''));
@@ -153,6 +164,7 @@ const Dashboard = () => {
                       <th className="px-6 py-4 font-semibold">Completion Time</th>
                       <th className="px-6 py-4 font-semibold">Quality Rating</th>
                       <th className="px-6 py-4 font-semibold">Disputes</th>
+                      <th className="px-6 py-4 font-semibold">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -164,6 +176,11 @@ const Dashboard = () => {
                           <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{bid.duration} days</td>
                           <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{bid.qualityScore}%</td>
                           <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{bid.pastDisputes}</td>
+                          <td className="px-6 py-4 font-semibold">
+                            <span className={`px-2 py-1 rounded-full text-xs ${bid.status === 'Accepted' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : bid.status === 'Rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'}`}>
+                              {bid.status || 'Pending'}
+                            </span>
+                          </td>
                         </tr>
                       ))
                     ) : (
@@ -280,6 +297,7 @@ const Dashboard = () => {
                       <th className="px-6 py-4 font-semibold">Duration</th>
                       <th className="px-6 py-4 font-semibold">Quality Rating</th>
                       <th className="px-6 py-4 font-semibold">Disputes</th>
+                      <th className="px-6 py-4 font-semibold">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -292,6 +310,11 @@ const Dashboard = () => {
                           <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{bid.duration} days</td>
                           <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{bid.qualityScore}%</td>
                           <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{bid.pastDisputes}</td>
+                          <td className="px-6 py-4 font-semibold">
+                            <span className={`px-2 py-1 rounded-full text-xs ${bid.status === 'Accepted' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : bid.status === 'Rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'}`}>
+                              {bid.status || 'Pending'}
+                            </span>
+                          </td>
                         </tr>
                       ))
                     ) : (
@@ -360,6 +383,9 @@ const Dashboard = () => {
                           <th className="py-3 px-4 font-semibold text-xs uppercase">Timeline Deviation</th>
                           <th className="py-3 px-4 font-semibold text-xs uppercase">Past Disputes</th>
                           <th className="py-3 px-4 font-semibold text-xs uppercase text-right">Weighted score (0-100)</th>
+                          {(currentUser?.role === 'Engineer' || currentUser?.role === 'Administrator') && (
+                            <th className="py-3 px-4 font-semibold text-xs uppercase text-center">Action</th>
+                          )}
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-indigo-500/5">
@@ -390,6 +416,26 @@ const Dashboard = () => {
                                   {bid.finalScore}
                                 </span>
                               </td>
+                              {(currentUser?.role === 'Engineer' || currentUser?.role === 'Administrator') && (
+                                <td className="py-4 px-4">
+                                  <div className="flex gap-2 justify-center">
+                                    <button 
+                                      onClick={() => handleRespondToBid(bid.id, 'Accepted')}
+                                      className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${bid.status === 'Accepted' ? 'bg-green-500 text-white cursor-default' : 'bg-green-500/10 text-green-400 hover:bg-green-500/20'}`}
+                                      disabled={bid.status === 'Accepted'}
+                                    >
+                                      {bid.status === 'Accepted' ? 'Accepted' : 'Accept'}
+                                    </button>
+                                    <button 
+                                      onClick={() => handleRespondToBid(bid.id, 'Rejected')}
+                                      className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${bid.status === 'Rejected' ? 'bg-red-500 text-white cursor-default' : 'bg-red-500/10 text-red-400 hover:bg-red-500/20'}`}
+                                      disabled={bid.status === 'Rejected'}
+                                    >
+                                      {bid.status === 'Rejected' ? 'Rejected' : 'Reject'}
+                                    </button>
+                                  </div>
+                                </td>
+                              )}
                             </tr>
                           );
                         })}
