@@ -14,7 +14,12 @@ const Dashboard = () => {
 
   const activeProjectTitle = selectedProjTitle || (projects.length > 0 ? projects[0].title : '');
   const activeProject = projects.find(p => p.title === activeProjectTitle);
-  const activeBids = bids.filter(b => b.projectName === activeProjectTitle);
+  const activeBids = bids.filter(b => {
+    if (!b.projectName || !activeProjectTitle) return false;
+    const bidName = b.projectName.toLowerCase().trim();
+    const projName = activeProjectTitle.toLowerCase().trim();
+    return bidName === projName || bidName.includes(projName) || projName.includes(bidName);
+  });
 
   const rankedBids = activeBids.map(bid => {
     if (!activeProject) return { ...bid, finalScore: 0 };
@@ -298,6 +303,9 @@ const Dashboard = () => {
                       <th className="px-6 py-4 font-semibold">Quality Rating</th>
                       <th className="px-6 py-4 font-semibold">Disputes</th>
                       <th className="px-6 py-4 font-semibold">Status</th>
+                      {(currentUser?.role === 'Engineer' || currentUser?.role === 'Administrator') && (
+                        <th className="px-6 py-4 font-semibold text-center">Action</th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -315,6 +323,26 @@ const Dashboard = () => {
                               {bid.status || 'Pending'}
                             </span>
                           </td>
+                          {(currentUser?.role === 'Engineer' || currentUser?.role === 'Administrator') && (
+                            <td className="px-6 py-4">
+                              <div className="flex gap-2 justify-center">
+                                <button 
+                                  onClick={() => handleRespondToBid(bid.id, 'Accepted')}
+                                  className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${bid.status === 'Accepted' ? 'bg-green-500 text-white cursor-default' : 'bg-green-500/10 text-green-600 hover:bg-green-500/20 dark:text-green-400'}`}
+                                  disabled={bid.status === 'Accepted'}
+                                >
+                                  {bid.status === 'Accepted' ? 'Accepted' : 'Accept'}
+                                </button>
+                                <button 
+                                  onClick={() => handleRespondToBid(bid.id, 'Rejected')}
+                                  className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${bid.status === 'Rejected' ? 'bg-red-500 text-white cursor-default' : 'bg-red-500/10 text-red-600 hover:bg-red-500/20 dark:text-red-400'}`}
+                                  disabled={bid.status === 'Rejected'}
+                                >
+                                  {bid.status === 'Rejected' ? 'Rejected' : 'Reject'}
+                                </button>
+                              </div>
+                            </td>
+                          )}
                         </tr>
                       ))
                     ) : (
