@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { collection, addDoc, getDocs, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const NewBid = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const [projects, setProjects] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     projectName: '',
     projectCategory: '',
@@ -19,6 +22,17 @@ const NewBid = () => {
     pastDisputes: ''
   });
 
+  // Load all published projects from Firebase
+  useEffect(() => {
+    const q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
+    const unsub = onSnapshot(q, (snap) => {
+      setProjects(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setLoadingProjects(false);
+    }, () => setLoadingProjects(false));
+    return () => unsub();
+  }, []);
+
+  // Auto-fill contractor name for Contractors
   useEffect(() => {
     if (currentUser) {
       setFormData(prev => ({
@@ -32,9 +46,24 @@ const NewBid = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // When a project is selected from the dropdown, auto-fill its category
+  const handleProjectSelect = (e) => {
+    const selectedTitle = e.target.value;
+    const selectedProject = projects.find(p => p.title === selectedTitle);
+    setFormData(prev => ({
+      ...prev,
+      projectName: selectedTitle,
+      projectCategory: selectedProject ? selectedProject.category : ''
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    if (!formData.projectName) {
+      alert('Please select a target project.');
+      return;
+    }
+    setSubmitting(true);
     try {
       const newBid = {
         ...formData,
@@ -44,14 +73,15 @@ const NewBid = () => {
         qualityScore: Number(formData.qualityScore),
         onTimeRate: Number(formData.onTimeRate),
         pastDisputes: Number(formData.pastDisputes),
+        status: 'Pending',
         createdAt: new Date().toISOString()
       };
-      
       await addDoc(collection(db, 'bids'), newBid);
       navigate('/dashboard');
     } catch (error) {
       console.error("Error adding bid: ", error);
-      alert("Failed to submit bid");
+      alert("Failed to submit bid. Please check your connection and try again.");
+      setSubmitting(false);
     }
   };
 
@@ -60,46 +90,61 @@ const NewBid = () => {
       <div className="glass-panel p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Submit Bid Proposal</h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Submit a formal project proposal to the evaluation committee</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Select a target project and submit your formal proposal to the evaluation committee</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           
+          {/* ── Project Selection ── */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-6 border-b border-slate-100 dark:border-slate-800">
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Project Name</label>
-              <input 
-                type="text"
-                name="projectName" 
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all" 
-                onChange={handleChange}
-                value={formData.projectName}
-                placeholder="e.g. New Classroom Block"
-                required
-              />
+            
+            {/* Project Dropdown */}
+            <div className="lg:col-span-2">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                Target Project <span className="text-red-500">*</span>
+              </label>
+              {loadingProjects ? (
+                <div className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm text-slate-400">
+                  Loading available projects...
+                </div>
+              ) : projects.length === 0 ? (
+                <div className="w-full rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20 px-4 py-3 text-sm text-red-500 dark:text-red-400">
+                  No projects are currently published. Please check back later.
+                </div>
+              ) : (
+                <select
+                  name="projectName"
+                  value={formData.projectName}
+                  onChange={handleProjectSelect}
+                  required
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none"
+                >
+                  <option value="">-- Select a Project to Bid On --</option>
+                  {projects.map(p => (
+                    <option key={p.id} value={p.title} className="bg-white dark:bg-slate-900">
+                      {p.title} {p.budget ? `(Budget: ₦${Number(p.budget).toLocaleString()})` : ''}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
+            {/* Category (auto-filled, read-only) */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Project Category</label>
               <input 
                 type="text"
-                name="projectCategory" 
-                list="category-list"
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all" 
-                onChange={handleChange}
+                name="projectCategory"
+                readOnly
                 value={formData.projectCategory}
-                placeholder="e.g. Electrical, Building"
-                required
+                placeholder="Auto-filled on selection"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 px-4 py-3 text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed transition-all"
               />
-              <datalist id="category-list">
-                <option value="Electrical" />
-                <option value="Civil/Building" />
-                <option value="Plumbing" />
-                <option value="Supplies/IT" />
-              </datalist>
+              <p className="text-[10px] text-slate-400 mt-1">Automatically filled from the selected project</p>
             </div>
 
-            <div>
+            {/* Contractor Name */}
+            <div className="lg:col-span-3">
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Contractor Name</label>
               <input 
                 type="text" 
@@ -108,7 +153,7 @@ const NewBid = () => {
                 readOnly={currentUser?.role === 'Contractor'}
                 value={formData.contractor}
                 placeholder="e.g. BASHIRU ABDULGANIYU"
-                className={`w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all ${currentUser?.role === 'Contractor' ? 'bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 cursor-not-allowed' : ''}`}
+                className={`w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all ${currentUser?.role === 'Contractor' ? 'bg-slate-50 dark:bg-slate-900/60 text-slate-500 dark:text-slate-400 cursor-not-allowed' : ''}`}
                 onChange={handleChange}
               />
               {currentUser?.role === 'Contractor' && (
@@ -117,6 +162,7 @@ const NewBid = () => {
             </div>
           </div>
 
+          {/* ── Bid Metrics ── */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Bid Amount (₦)</label>
@@ -210,10 +256,11 @@ const NewBid = () => {
               Cancel
             </button>
             <button 
-              type="submit" 
-              className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 px-6 rounded-xl shadow-md transition-colors"
+              type="submit"
+              disabled={submitting || projects.length === 0}
+              className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-xl shadow-md transition-colors"
             >
-              Submit Bid
+              {submitting ? 'Submitting...' : 'Submit Bid'}
             </button>
           </div>
         </form>
@@ -223,3 +270,4 @@ const NewBid = () => {
 };
 
 export default NewBid;
+
