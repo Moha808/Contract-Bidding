@@ -31,8 +31,8 @@ function App() {
                 <Route path="profile" element={<Profile />} />
                 <Route path="settings" element={<Settings />} />
                 
-                {/* Only Administrators can create projects */}
-                <Route element={<ProtectedRoute allowedRoles={['Administrator']} />}>
+                {/* Only Administrators and Procurement Officers can create projects */}
+                <Route element={<ProtectedRoute allowedRoles={['Administrator', 'Procurement Officer']} />}>
                   <Route path="projects/new" element={<NewProject />} />
                 </Route>
                 

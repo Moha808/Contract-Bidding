@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
+import Modal from '../components/Modal';
 
 const NewBid = () => {
   const navigate = useNavigate();
@@ -10,6 +11,11 @@ const NewBid = () => {
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [modal, setModal] = useState({ isOpen: false, type: 'info', title: '', message: '', onConfirm: null });
+
+  const showModal = (type, title, message, onConfirm = null) => setModal({ isOpen: true, type, title, message, onConfirm });
+  const closeModal = () => setModal(m => ({ ...m, isOpen: false }));
+
   const [formData, setFormData] = useState({
     projectName: '',
     projectCategory: '',
@@ -26,7 +32,9 @@ const NewBid = () => {
   useEffect(() => {
     const q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, (snap) => {
-      setProjects(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const loadedProjects = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Only allow bidding on projects that are not yet Awarded
+      setProjects(loadedProjects.filter(p => p.status !== 'Awarded'));
       setLoadingProjects(false);
     }, () => setLoadingProjects(false));
     return () => unsub();
@@ -60,7 +68,7 @@ const NewBid = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.projectName) {
-      alert('Please select a target project.');
+      showModal('error', 'Missing Information', 'Please select a target project.');
       return;
     }
     setSubmitting(true);
@@ -77,16 +85,31 @@ const NewBid = () => {
         createdAt: new Date().toISOString()
       };
       await addDoc(collection(db, 'bids'), newBid);
-      navigate('/dashboard');
+      showModal('success', 'Bid Submitted', 'Your proposal was submitted successfully!', () => navigate('/dashboard'));
     } catch (error) {
       console.error("Error adding bid: ", error);
-      alert("Failed to submit bid. Please check your connection and try again.");
+      showModal('error', 'Submission Failed', 'Failed to submit bid. Please check your connection and try again.');
       setSubmitting(false);
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto animate-in slide-in-from-bottom-4 duration-500">
+      <Modal 
+        isOpen={modal.isOpen} 
+        onClose={() => {
+          closeModal();
+          if (modal.type === 'success' && !modal.onConfirm) {
+            // just close
+          } else if (modal.onConfirm && modal.type !== 'confirm') {
+            modal.onConfirm();
+          }
+        }} 
+        type={modal.type} 
+        title={modal.title} 
+        message={modal.message} 
+        onConfirm={modal.onConfirm} 
+      />
       <div className="glass-panel p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Submit Bid Proposal</h2>
@@ -98,35 +121,33 @@ const NewBid = () => {
           {/* ── Project Selection ── */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-6 border-b border-slate-100 dark:border-slate-800">
             
-            {/* Project Dropdown */}
+            {/* Project Input with Datalist suggestions */}
             <div className="lg:col-span-2">
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Target Project <span className="text-red-500">*</span>
               </label>
-              {loadingProjects ? (
-                <div className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm text-slate-400">
-                  Loading available projects...
-                </div>
-              ) : projects.length === 0 ? (
-                <div className="w-full rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20 px-4 py-3 text-sm text-red-500 dark:text-red-400">
-                  No projects are currently published. Please check back later.
-                </div>
-              ) : (
-                <select
-                  name="projectName"
-                  value={formData.projectName}
-                  onChange={handleProjectSelect}
-                  required
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none"
-                >
-                  <option value="">-- Select a Project to Bid On --</option>
-                  {projects.map(p => (
-                    <option key={p.id} value={p.title} className="bg-white dark:bg-slate-900">
-                      {p.title} {p.budget ? `(Budget: ₦${Number(p.budget).toLocaleString()})` : ''}
-                    </option>
-                  ))}
-                </select>
-              )}
+              <input
+                type="text"
+                name="projectName"
+                list="projects-datalist"
+                value={formData.projectName}
+                onChange={handleProjectSelect}
+                required
+                placeholder={loadingProjects ? "Loading projects..." : "Type or select a project name..."}
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+              />
+              <datalist id="projects-datalist">
+                {projects.map(p => (
+                  <option key={p.id} value={p.title}>
+                    {p.budget ? `Budget: ₦${Number(p.budget).toLocaleString()}` : ''}
+                  </option>
+                ))}
+              </datalist>
+              <p className="text-[10px] text-slate-400 mt-1">
+                {projects.length > 0 
+                  ? `${projects.length} project(s) available — select from list or type a custom name`
+                  : 'No published projects yet — you can still type the project name manually'}
+              </p>
             </div>
 
             {/* Category (auto-filled, read-only) */}
